@@ -3,673 +3,850 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StreamHub - Your Streaming Dashboard</title>
+    <title>StreamHub — Your Streaming Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      * {
+      *,
+      *::before,
+      *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       }
 
       :root {
-        --primary: #6a11cb;
-        --secondary: #2575fc;
-        --dark: #121212;
-        --darker: #0a0a0a;
-        --light: #f5f5f5;
-        --gray: #2a2a2a;
-        --card-bg: rgba(255, 255, 255, 0.05);
-        --transition: all 0.3s ease;
+        --bg-base: #0b0813;
+        --bg-deep: #050309;
+        --ink: #f4f1ff;
+        --ink-soft: rgba(244, 241, 255, 0.62);
+        --ink-faint: rgba(244, 241, 255, 0.4);
+
+        --accent-pink: #ff4fa8;
+        --accent-violet: #8b5cf6;
+        --accent-cyan: #22d3ee;
+        --accent-amber: #fbbf24;
+        --accent-lime: #a3e635;
+
+        --glass: rgba(255, 255, 255, 0.06);
+        --glass-strong: rgba(255, 255, 255, 0.09);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-border-strong: rgba(255, 255, 255, 0.22);
+
+        --radius-sm: 14px;
+        --radius-md: 20px;
+        --radius-lg: 28px;
+
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.35);
+        --shadow-glow: 0 20px 60px -20px rgba(139, 92, 246, 0.4);
+
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+        font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
+      html,
       body {
-        background: linear-gradient(135deg, var(--darker), var(--dark));
-        color: var(--light);
+        background: var(--bg-base);
+        color: var(--ink);
         min-height: 100vh;
         overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: -0.01em;
+      }
+
+      /* ====== Animated gradient mesh background ====== */
+      .mesh {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        overflow: hidden;
+        background: var(--bg-deep);
+      }
+      .mesh::before,
+      .mesh::after,
+      .mesh span {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.55;
+        will-change: transform;
+      }
+      .mesh::before {
+        width: 55vw;
+        height: 55vw;
+        background: var(--accent-violet);
+        top: -10vw;
+        left: -10vw;
+        animation: drift1 22s ease-in-out infinite alternate;
+      }
+      .mesh::after {
+        width: 45vw;
+        height: 45vw;
+        background: var(--accent-pink);
+        bottom: -15vw;
+        right: -10vw;
+        animation: drift2 26s ease-in-out infinite alternate;
+      }
+      .mesh span {
+        width: 40vw;
+        height: 40vw;
+        background: var(--accent-cyan);
+        top: 30vh;
+        right: 20vw;
+        opacity: 0.35;
+        animation: drift3 30s ease-in-out infinite alternate;
+      }
+      @keyframes drift1 {
+        to {
+          transform: translate(20vw, 15vh) rotate(120deg);
+        }
+      }
+      @keyframes drift2 {
+        to {
+          transform: translate(-15vw, -20vh) rotate(-100deg);
+        }
+      }
+      @keyframes drift3 {
+        to {
+          transform: translate(-25vw, 10vh) scale(1.2);
+        }
+      }
+
+      /* Grain overlay */
+      .grain {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.07;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /></filter><rect width='100%25' height='100%25' filter='url(%23n)' /></svg>");
       }
 
       .container {
-        max-width: 1400px;
+        max-width: 1320px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 32px 28px 80px;
       }
 
-      /* Header Styles */
+      /* ====== Header ====== */
       header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 20px 0;
-        margin-bottom: 40px;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 56px;
+        animation: fadeUp 0.8s var(--ease) both;
       }
 
       .logo {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 14px;
+        padding-top: 4px;
       }
-
-      .logo i {
-        font-size: 2.2rem;
-        background: linear-gradient(to right, var(--primary), var(--secondary));
+      .logo-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-pink),
+          var(--accent-violet) 60%,
+          var(--accent-cyan)
+        );
+        display: grid;
+        place-items: center;
+        box-shadow: 0 8px 24px -8px var(--accent-violet);
+        position: relative;
+      }
+      .logo-mark::after {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        border-radius: 13px;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.3),
+          transparent 50%
+        );
+        pointer-events: none;
+      }
+      .logo-mark i {
+        font-size: 1.1rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+      }
+      .logo-text h1 {
+        font-family: "Instrument Serif", serif;
+        font-size: 1.85rem;
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        line-height: 1;
+      }
+      .logo-text h1 em {
+        font-style: italic;
+        background: linear-gradient(
+          120deg,
+          var(--accent-pink),
+          var(--accent-violet)
+        );
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
       }
-
-      .logo h1 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        background: linear-gradient(to right, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+      .logo-text p {
+        font-size: 0.72rem;
+        color: var(--ink-faint);
+        margin-top: 2px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       .header-right {
         display: flex;
-        align-items: center;
-        gap: 20px;
+        align-items: stretch;
+        gap: 16px;
       }
 
-      .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-
-      .user-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background: linear-gradient(to right, var(--primary), var(--secondary));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        cursor: pointer;
-      }
-
-      /* Weather Widget */
+      /* ====== Weather Widget ====== */
       .weather-widget {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        min-width: 250px;
-        text-align: center;
+        background: var(--glass);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 18px 22px;
+        min-width: 320px;
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+      }
+      .weather-widget::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.08),
+          transparent 50%
+        );
+        pointer-events: none;
       }
 
-      .weather-header {
+      .weather-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 14px;
       }
-
-      .weather-title {
-        font-size: 1rem;
-        color: #aaa;
-        font-weight: 600;
-      }
-
-      .weather-refresh {
-        background: none;
-        border: none;
-        color: var(--secondary);
-        cursor: pointer;
-        font-size: 1rem;
-        transition: var(--transition);
-      }
-
-      .weather-refresh:hover {
-        transform: rotate(180deg);
-      }
-
       .weather-location {
-        font-size: 1.1rem;
-        color: var(--secondary);
-        font-weight: 600;
-        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--ink-soft);
+        letter-spacing: 0.04em;
+      }
+      .weather-location i {
+        color: var(--accent-pink);
+        font-size: 0.78rem;
+      }
+      .weather-refresh {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--glass-border);
+        color: var(--ink);
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 0.78rem;
+        transition: all 0.5s var(--ease);
+      }
+      .weather-refresh:hover {
+        background: rgba(255, 255, 255, 0.14);
+        transform: rotate(180deg);
       }
 
       .weather-main {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 15px;
+        gap: 18px;
       }
-
       .weather-icon {
-        font-size: 3rem;
-        color: var(--secondary);
+        font-size: 2.6rem;
+        background: linear-gradient(
+          135deg,
+          var(--accent-amber),
+          var(--accent-pink)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 4px 12px rgba(255, 79, 168, 0.3));
       }
-
+      .weather-readings {
+        flex: 1;
+      }
       .weather-temp {
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-family: "Instrument Serif", serif;
+        font-size: 2.6rem;
+        font-weight: 400;
+        line-height: 0.95;
+        letter-spacing: -0.03em;
       }
-
+      .weather-temp sup {
+        font-size: 1rem;
+        color: var(--ink-soft);
+        vertical-align: top;
+        margin-left: 2px;
+      }
       .weather-condition {
-        font-size: 1.1rem;
-        color: #ccc;
-        margin-bottom: 15px;
+        font-size: 0.82rem;
+        color: var(--ink-soft);
+        margin-top: 4px;
+      }
+
+      .weather-meta {
+        display: flex;
+        gap: 16px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--glass-border);
+        font-size: 0.74rem;
+        color: var(--ink-faint);
+      }
+      .weather-meta span strong {
+        color: var(--ink);
         font-weight: 500;
+        margin-left: 4px;
       }
 
-      .weather-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        font-size: 0.9rem;
-        color: #aaa;
+      /* ====== Hero greeting ====== */
+      .hero {
+        margin-bottom: 48px;
+        animation: fadeUp 0.8s 0.1s var(--ease) both;
       }
-
-      .weather-detail {
-        display: flex;
-        flex-direction: column;
+      .hero-eyebrow {
+        display: inline-flex;
         align-items: center;
-        padding: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
+        gap: 8px;
+        font-size: 0.72rem;
+        color: var(--ink-soft);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        padding: 6px 14px;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 100px;
+        backdrop-filter: blur(12px);
+        margin-bottom: 18px;
+      }
+      .hero-eyebrow .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent-lime);
+        box-shadow: 0 0 12px var(--accent-lime);
+      }
+      .hero h2 {
+        font-family: "Instrument Serif", serif;
+        font-size: clamp(2.2rem, 5vw, 3.6rem);
+        font-weight: 400;
+        line-height: 1.05;
+        letter-spacing: -0.025em;
+        max-width: 760px;
+      }
+      .hero h2 em {
+        font-style: italic;
+        background: linear-gradient(
+          120deg,
+          var(--accent-pink) 20%,
+          var(--accent-violet) 60%,
+          var(--accent-cyan)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
       }
 
-      .weather-detail i {
-        font-size: 1.2rem;
-        margin-bottom: 5px;
-        color: var(--secondary);
-      }
-
-      /* Services Section */
-      .services-section {
-        margin-bottom: 40px;
-      }
-
-      .section-title {
-        font-size: 1.5rem;
-        margin-bottom: 25px;
+      /* ====== Services Section ====== */
+      .section-head {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 24px;
       }
-
-      .section-title i {
-        color: var(--secondary);
+      .section-head h3 {
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .section-head .count {
+        font-family: "Instrument Serif", serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--ink-faint);
       }
 
       .services-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 16px;
       }
 
       .service-card {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 25px 15px;
+        --c: var(--accent-violet);
+        position: relative;
+        background: var(--glass);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 22px 18px 20px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        transition: var(--transition);
-        cursor: pointer;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 16px;
         text-decoration: none;
-        color: var(--light);
+        color: var(--ink);
+        overflow: hidden;
+        transition: transform 0.5s var(--ease), border-color 0.4s var(--ease),
+          box-shadow 0.5s var(--ease);
+        animation: fadeUp 0.7s var(--card-delay, 0s) var(--ease) both;
+        isolation: isolate;
       }
-
+      .service-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 20% 0%,
+          color-mix(in srgb, var(--c) 28%, transparent),
+          transparent 60%
+        );
+        opacity: 0.5;
+        transition: opacity 0.5s var(--ease);
+        z-index: -1;
+      }
+      .service-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          color-mix(in srgb, var(--c) 60%, transparent),
+          transparent
+        );
+        opacity: 0.6;
+      }
       .service-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-6px);
+        border-color: color-mix(in srgb, var(--c) 40%, var(--glass-border));
+        box-shadow: 0 20px 50px -20px color-mix(in srgb, var(--c) 50%, transparent);
+      }
+      .service-card:hover::before {
+        opacity: 0.9;
       }
 
       .service-icon {
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        transition: var(--transition);
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        background: color-mix(in srgb, var(--c) 18%, transparent);
+        color: var(--c);
+        border: 1px solid color-mix(in srgb, var(--c) 25%, transparent);
+        transition: transform 0.5s var(--ease);
       }
-
       .service-card:hover .service-icon {
-        transform: scale(1.1);
+        transform: scale(1.08) rotate(-3deg);
+      }
+      .service-icon svg {
+        width: 60%;
+        height: 60%;
+        display: block;
       }
 
+      .service-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
       .service-name {
-        font-weight: 600;
-        font-size: 0.95rem;
-        text-align: center;
-        line-height: 1.3;
+        font-weight: 500;
+        font-size: 0.98rem;
+        letter-spacing: -0.01em;
+      }
+      .service-tag {
+        font-size: 0.72rem;
+        color: var(--ink-faint);
+        letter-spacing: 0.02em;
       }
 
-      /* Loading State */
+      .service-arrow {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        display: grid;
+        place-items: center;
+        font-size: 0.7rem;
+        color: var(--ink-soft);
+        opacity: 0;
+        transform: translate(-4px, 4px);
+        transition: all 0.4s var(--ease);
+      }
+      .service-card:hover .service-arrow {
+        opacity: 1;
+        transform: translate(0, 0);
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      /* ====== Loading ====== */
       .loading {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        padding: 60px 20px;
-        text-align: center;
+        gap: 12px;
+        color: var(--ink-soft);
+        font-size: 0.85rem;
+        padding: 8px 0;
       }
-
-      .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid rgba(255, 255, 255, 0.1);
-        border-top: 5px solid var(--secondary);
+      .loading-dots {
+        display: inline-flex;
+        gap: 4px;
+      }
+      .loading-dots span {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: 20px;
+        background: var(--accent-pink);
+        animation: pulse 1.2s ease-in-out infinite;
       }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
+      .loading-dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .loading-dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes pulse {
+        0%,
         100% {
-          transform: rotate(360deg);
+          opacity: 0.3;
+          transform: scale(0.8);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1);
         }
       }
 
-      .loading p {
-        color: #aaa;
-        font-size: 1.1rem;
-      }
-
-      /* Error State */
       .error-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-        text-align: center;
-        background: var(--card-bg);
-        border-radius: 12px;
-        border: 2px dashed rgba(255, 255, 255, 0.1);
+        padding: 16px 0;
+        color: var(--ink-soft);
+        font-size: 0.85rem;
       }
-
-      .error-state i {
-        font-size: 3rem;
-        color: rgba(255, 255, 255, 0.2);
-        margin-bottom: 15px;
-      }
-
-      .error-state h3 {
-        font-size: 1.3rem;
-        margin-bottom: 10px;
-        color: rgba(255, 255, 255, 0.7);
-      }
-
-      .error-state p {
-        color: rgba(255, 255, 255, 0.5);
-        margin-bottom: 20px;
-        max-width: 400px;
-      }
-
       .retry-btn {
-        background: var(--secondary);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 600;
+        margin-top: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--ink);
+        border: 1px solid var(--glass-border);
+        padding: 8px 14px;
+        border-radius: 100px;
+        font-family: inherit;
+        font-size: 0.78rem;
         cursor: pointer;
-        transition: var(--transition);
-        display: flex;
+        transition: all 0.3s var(--ease);
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
-
       .retry-btn:hover {
-        background: var(--primary);
-        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.14);
+        border-color: var(--glass-border-strong);
       }
 
-      /* Footer */
+      /* ====== Footer ====== */
       footer {
-        margin-top: 50px;
-        text-align: center;
-        padding: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 0.9rem;
-        color: #aaa;
+        margin-top: 80px;
+        padding-top: 32px;
+        border-top: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 0.78rem;
+        color: var(--ink-faint);
+      }
+      footer em {
+        font-family: "Instrument Serif", serif;
+        font-style: italic;
+        color: var(--ink-soft);
       }
 
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .services-grid {
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-
-        .header-right {
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        .weather-widget {
-          min-width: 200px;
-        }
-
-        .weather-main {
-          gap: 15px;
-        }
-
-        .weather-icon {
-          font-size: 2.5rem;
-        }
-
-        .weather-temp {
-          font-size: 2rem;
-        }
-
-        .service-card {
-          padding: 20px 10px;
-        }
-
-        .service-icon {
-          width: 55px;
-          height: 55px;
-          font-size: 1.5rem;
-        }
-
-        .service-name {
-          font-size: 0.9rem;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
       }
 
-      @media (max-width: 480px) {
+      /* ====== Responsive ====== */
+      @media (max-width: 900px) {
         header {
           flex-direction: column;
-          gap: 20px;
-          text-align: center;
+          align-items: stretch;
         }
-
+        .header-right {
+          justify-content: space-between;
+        }
+        .weather-widget {
+          min-width: 0;
+          flex: 1;
+        }
+      }
+      @media (max-width: 560px) {
+        .container {
+          padding: 20px 18px 60px;
+        }
         .services-grid {
-          grid-template-columns: repeat(3, 1fr);
-          gap: 15px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
         }
-
-        .weather-details {
-          grid-template-columns: 1fr;
-        }
-
         .service-card {
-          padding: 15px 8px;
+          padding: 18px 14px;
         }
-
-        .service-icon {
-          width: 50px;
-          height: 50px;
-          font-size: 1.4rem;
+        .weather-meta {
+          flex-wrap: wrap;
+          gap: 10px;
         }
-
-        .service-name {
-          font-size: 0.85rem;
+        footer {
+          flex-direction: column;
+          text-align: center;
         }
       }
     </style>
   </head>
   <body>
+    <div class="mesh"><span></span></div>
+    <div class="grain"></div>
+
     <div class="container">
       <header>
         <div class="logo">
-          <i class="fas fa-play-circle"></i>
-          <h1>Netflix</h1>
+          <div class="logo-mark"><i class="fas fa-play"></i></div>
+          <div class="logo-text">
+            <h1>Stream<em>Hub</em></h1>
+            <p>Everything in one place</p>
+          </div>
         </div>
+
         <div class="header-right">
           <div class="weather-widget" id="weather-widget">
-            <div class="weather-header">
-              <div class="weather-title">Current Weather</div>
-              <button class="weather-refresh" onclick="fetchDetroitWeather()">
-                <i class="fas fa-sync-alt"></i>
+            <div class="weather-top">
+              <div class="weather-location">
+                <i class="fas fa-location-dot"></i>
+                <span>Detroit, MI</span>
+              </div>
+              <button
+                class="weather-refresh"
+                onclick="fetchDetroitWeather()"
+                aria-label="Refresh weather"
+              >
+                <i class="fas fa-arrows-rotate"></i>
               </button>
             </div>
-            <div class="weather-location">Detroit, MI</div>
             <div class="loading">
-              <div class="loading-spinner"></div>
-              <p>Loading Detroit weather...</p>
+              <div class="loading-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span>Fetching weather…</span>
             </div>
-          </div>
-          <div class="user-profile">
-            <div class="user-avatar">JS</div>
           </div>
         </div>
       </header>
 
-      <main>
-        <section class="services-section">
-          <h2 class="section-title">
-            <i class="fas fa-tv"></i> Your Streaming Services
-          </h2>
-          <div class="services-grid">
-            <!-- Netflix -->
-            <a
-              href="https://netflix.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #e50914"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(229, 9, 20, 0.2); color: #e50914"
-              >
-                <i class="fab fa-netflix"></i>
-              </div>
-              <span class="service-name">Netflix</span>
-            </a>
+      <section class="hero">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          <span id="time-greeting">Welcome back</span>
+        </div>
+        <h2>What are you in the <em>mood</em> for tonight?</h2>
+      </section>
 
-            <!-- YouTube -->
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #ff0000"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(255, 0, 0, 0.2); color: #ff0000"
-              >
-                <i class="fab fa-youtube"></i>
-              </div>
-              <span class="service-name">YouTube</span>
-            </a>
+      <section>
+        <div class="section-head">
+          <h3>Your Streaming Services</h3>
+          <span class="count"><em>eleven</em> available</span>
+        </div>
 
-            <!-- Amazon Prime -->
-            <a
-              href="https://www.amazon.com/Amazon-Video/b/?&node=2858778011&ref=dvm_MLP_ROWNA_US_1"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #00a8e1"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(0, 168, 225, 0.2); color: #00a8e1"
-              >
-                <i class="fab fa-amazon"></i>
-              </div>
-              <span class="service-name">Amazon Prime</span>
-            </a>
-
-            <!-- Hulu -->
-            <a
-              href="https://hulu.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #1ce783"
-            >
-              <div
-                class="service-icon"
-                style="
-                  background-color: rgba(28, 231, 131, 0.2);
-                  color: #1ce783;
-                "
-              >
-                <i class="fas fa-tv"></i>
-              </div>
-              <span class="service-name">Hulu</span>
-            </a>
-
-            <!-- Disney+ -->
-            <a
-              href="https://disneyplus.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #113ccf"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(17, 60, 207, 0.2); color: #113ccf"
-              >
-                <i class="fas fa-crown"></i>
-              </div>
-              <span class="service-name">Disney+</span>
-            </a>
-
-            <!-- HBO Max -->
-            <a
-              href="https://hbomax.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #821bf0"
-            >
-              <div
-                class="service-icon"
-                style="
-                  background-color: rgba(130, 27, 240, 0.2);
-                  color: #821bf0;
-                "
-              >
-                <i class="fab fa-hbo"></i>
-              </div>
-              <span class="service-name">HBO Max</span>
-            </a>
-
-            <!-- Apple TV+ -->
-            <a
-              href="https://tv.apple.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #000000"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(0, 0, 0, 0.2); color: #ffffff"
-              >
-                <i class="fab fa-apple"></i>
-              </div>
-              <span class="service-name">Apple TV+</span>
-            </a>
-
-            <!-- Crunchyroll -->
-            <a
-              href="https://crunchyroll.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #ff6b00"
-            >
-              <div
-                class="service-icon"
-                style="background-color: rgba(255, 107, 0, 0.2); color: #ff6b00"
-              >
-                <i class="fas fa-dragon"></i>
-              </div>
-              <span class="service-name">Crunchyroll</span>
-            </a>
-
-            <!-- Pluto TV -->
-            <a
-              href="https://pluto.tv"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #ff66cc"
-            >
-              <div
-                class="service-icon"
-                style="
-                  background-color: rgba(255, 102, 204, 0.2);
-                  color: #ff66cc;
-                "
-              >
-                <i class="fas fa-satellite-dish"></i>
-              </div>
-              <span class="service-name">Pluto TV</span>
-            </a>
-
-            <!-- Plex -->
-            <a
-              href="https://watch.plex.tv/live-tv"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #e5a00d"
-            >
-              <div
-                class="service-icon"
-                style="
-                  background-color: rgba(229, 160, 13, 0.2);
-                  color: #e5a00d;
-                "
-              >
-                <i class="fas fa-server"></i>
-              </div>
-              <span class="service-name">Plex</span>
-            </a>
-
-            <!-- Tubi -->
-            <a
-              href="https://tubitv.com"
-              target="_blank"
-              class="service-card"
-              style="--service-color: #7b68ee"
-            >
-              <div
-                class="service-icon"
-                style="
-                  background-color: rgba(123, 104, 238, 0.2);
-                  color: #7b68ee;
-                "
-              >
-                <i class="fas fa-film"></i>
-              </div>
-              <span class="service-name">Tubi</span>
-            </a>
-          </div>
-        </section>
-      </main>
+        <div class="services-grid" id="services-grid">
+          <!-- cards injected by JS for staggered animation -->
+        </div>
+      </section>
 
       <footer>
-        <p>Your Central Hub for All Streaming Services</p>
-        <p style="margin-top: 10px; font-size: 0.8rem">
-          Weather data provided by Weather.gov for Detroit, MI
-        </p>
+        <div>
+          © <span id="year"></span> StreamHub. Your central hub for all
+          streaming.
+        </div>
+        <div>by <em>Gridlantis.org</em></div>
       </footer>
     </div>
 
     <script>
-      // DOM Elements
+      // ====== Services data ======
+      const services = [
+        {
+          name: "Netflix",
+          tag: "Originals & films",
+          svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.913.002-22.95zM5.398 1.05V24c1.873-.225 2.81-.312 4.715-.398v-9.22z"/></svg>`,
+          color: "#e50914",
+          url: "https://netflix.com",
+        },
+        {
+          name: "YouTube",
+          tag: "Videos & live",
+          icon: "fab fa-youtube",
+          color: "#ff3d3d",
+          url: "https://youtube.com",
+        },
+        {
+          name: "Prime Video",
+          tag: "Amazon",
+          icon: "fab fa-amazon",
+          color: "#00a8e1",
+          url: "https://www.amazon.com/Amazon-Video/b/?&node=2858778011",
+        },
+        {
+          name: "Hulu",
+          tag: "TV & exclusives",
+          icon: "fas fa-tv",
+          color: "#1ce783",
+          url: "https://hulu.com",
+        },
+        {
+          name: "Disney+",
+          tag: "Family & Marvel",
+          icon: "fa-solid fa-castle",
+          color: "#5b8df7",
+          url: "https://disneyplus.com",
+        },
+        {
+          name: "HBO Max",
+          tag: "Premium series",
+          svg: `<svg viewBox="0 0 80 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="currentColor"><path d="M3 8h4v6h4V8h4v16h-4v-6H7v6H3z"/><path d="M22 8h6c3 0 5 1.5 5 4 0 1.5-.8 2.6-2 3.2 1.5.5 2.5 1.8 2.5 3.6 0 3-2.2 5.2-5.8 5.2H22zm4 6.2h2c1.2 0 1.9-.6 1.9-1.6 0-.9-.7-1.5-1.9-1.5h-2zm0 6.5h2.2c1.4 0 2.2-.7 2.2-1.8 0-1.1-.8-1.8-2.2-1.8H26z"/><circle cx="44" cy="16" r="8"/><path d="M58 8h4l3 5 3-5h4v16h-4v-9l-3 5-3-5v9h-4z"/></g></svg>`,
+          color: "#a855f7",
+          url: "https://hbomax.com",
+        },
+        {
+          name: "Apple TV+",
+          tag: "Originals",
+          icon: "fab fa-apple",
+          color: "#e5e5e5",
+          url: "https://tv.apple.com",
+        },
+        {
+          name: "Crunchyroll",
+          tag: "Anime",
+          svg: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M16 2C8.27 2 2 8.27 2 16s6.27 14 14 14 14-6.27 14-14S23.73 2 16 2zm0 25.5c-6.35 0-11.5-5.15-11.5-11.5S9.65 4.5 16 4.5c2.07 0 4.01.55 5.69 1.5-.56-.13-1.14-.2-1.74-.2-4.42 0-8 3.58-8 8s3.58 8 8 8c.6 0 1.18-.07 1.74-.2-1.68.95-3.62 1.5-5.69 1.5z"/><circle fill="currentColor" cx="22" cy="11" r="2.2"/></svg>`,
+          color: "#f47521",
+          url: "https://crunchyroll.com",
+        },
+        {
+          name: "Pluto TV",
+          tag: "Free live TV",
+          icon: "fas fa-satellite-dish",
+          color: "#ff6ad5",
+          url: "https://pluto.tv",
+        },
+        {
+          name: "Plex",
+          tag: "Your library",
+          icon: "fas fa-server",
+          color: "#fbbf24",
+          url: "https://watch.plex.tv/live-tv",
+        },
+        {
+          name: "Tubi",
+          tag: "Free movies",
+          icon: "fas fa-film",
+          color: "#a78bfa",
+          url: "https://tubitv.com",
+        },
+      ];
+
+      const grid = document.getElementById("services-grid");
+      grid.innerHTML = services
+        .map(
+          (s, i) => `
+      <a href="${
+        s.url
+      }" target="_blank" rel="noopener" class="service-card" style="--c: ${
+            s.color
+          }; --card-delay: ${0.2 + i * 0.04}s">
+        <div class="service-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+        <div class="service-icon">${
+          s.svg ? s.svg : `<i class="${s.icon}"></i>`
+        }</div>
+        <div class="service-meta">
+          <span class="service-name">${s.name}</span>
+          <span class="service-tag">${s.tag}</span>
+        </div>
+      </a>
+    `
+        )
+        .join("");
+
+      // ====== Time-based greeting ======
+      const hr = new Date().getHours();
+      const greet =
+        hr < 5
+          ? "Burning the midnight oil"
+          : hr < 12
+          ? "Good morning"
+          : hr < 17
+          ? "Good afternoon"
+          : hr < 22
+          ? "Good evening"
+          : "Late night vibes";
+      document.getElementById("time-greeting").textContent = greet;
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // ====== Weather ======
       const weatherWidget = document.getElementById("weather-widget");
-
-      // Weather.gov API configuration (no API key required)
       const WEATHER_GOV_BASE_URL = "https://api.weather.gov";
+      const DETROIT = { lat: 42.3314, lon: -83.0458 };
 
-      // Detroit coordinates
-      const DETROIT_COORDINATES = {
-        lat: 42.3314,
-        lon: -83.0458,
-      };
-
-      // Weather icon mapping for Weather.gov conditions
       const weatherIcons = {
         sunny: "fas fa-sun",
         clear: "fas fa-moon",
@@ -690,153 +867,85 @@
         smoke: "fas fa-smog",
       };
 
-      // Initialize the dashboard
-      function initDashboard() {
-        fetchDetroitWeather();
-      }
-
-      // Fetch weather data for Detroit from Weather.gov API
       async function fetchDetroitWeather() {
+        weatherWidget.querySelector(
+          ".weather-top"
+        ).nextElementSibling.outerHTML = `
+        <div class="loading">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <span>Fetching weather…</span>
+        </div>`;
         try {
-          console.log("Fetching Detroit weather...");
-
-          await fetchWeatherByCoords(
-            DETROIT_COORDINATES.lat,
-            DETROIT_COORDINATES.lon
+          const pointsRes = await fetch(
+            `${WEATHER_GOV_BASE_URL}/points/${DETROIT.lat.toFixed(
+              4
+            )},${DETROIT.lon.toFixed(4)}`
           );
-        } catch (error) {
-          console.error("Error fetching Detroit weather:", error);
-          updateWeatherWidget(null, "Failed to load weather data for Detroit");
+          if (!pointsRes.ok) throw new Error(`points ${pointsRes.status}`);
+          const points = await pointsRes.json();
+          const forecastRes = await fetch(points.properties.forecast);
+          if (!forecastRes.ok)
+            throw new Error(`forecast ${forecastRes.status}`);
+          const forecast = await forecastRes.json();
+          renderWeather(forecast.properties.periods[0]);
+        } catch (err) {
+          console.error(err);
+          renderError("Weather service unavailable");
         }
       }
 
-      // Fetch weather by coordinates using Weather.gov API
-      async function fetchWeatherByCoords(lat, lon) {
-        try {
-          // First, get the weather station for these coordinates
-          const pointsResponse = await fetch(
-            `${WEATHER_GOV_BASE_URL}/points/${lat.toFixed(4)},${lon.toFixed(4)}`
-          );
-
-          if (!pointsResponse.ok) {
-            throw new Error(
-              `Weather.gov points request failed: ${pointsResponse.status}`
-            );
-          }
-
-          const pointsData = await pointsResponse.json();
-
-          // Get the forecast URL from the points data
-          const forecastUrl = pointsData.properties.forecast;
-
-          // Fetch the forecast data
-          const forecastResponse = await fetch(forecastUrl);
-
-          if (!forecastResponse.ok) {
-            throw new Error(
-              `Weather.gov forecast request failed: ${forecastResponse.status}`
-            );
-          }
-
-          const forecastData = await forecastResponse.json();
-
-          // Get current conditions from the first period
-          const currentPeriod = forecastData.properties.periods[0];
-
-          updateWeatherWidget(currentPeriod);
-        } catch (error) {
-          console.error("Error fetching weather by coordinates:", error);
-          updateWeatherWidget(null, "Weather service unavailable");
-        }
-      }
-
-      // Update weather widget
-      function updateWeatherWidget(weatherData, errorMessage = null) {
-        if (errorMessage || !weatherData) {
-          weatherWidget.innerHTML = `
-                    <div class="weather-header">
-                        <div class="weather-title">Current Weather</div>
-                        <button class="weather-refresh" onclick="fetchDetroitWeather()">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                    <div class="weather-location">Detroit, MI</div>
-                    <div class="error-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Weather Unavailable</h3>
-                        <p>${errorMessage || "Unable to load weather data"}</p>
-                        <button class="retry-btn" onclick="fetchDetroitWeather()">
-                            <i class="fas fa-redo"></i>
-                            Try Again
-                        </button>
-                    </div>
-                `;
-          return;
-        }
-
-        // Update weather icon based on condition
-        const condition = weatherData.shortForecast.toLowerCase();
-        let iconClass = "fas fa-cloud";
-
-        for (const [key, value] of Object.entries(weatherIcons)) {
-          if (condition.includes(key)) {
-            iconClass = value;
+      function renderWeather(w) {
+        const cond = (w.shortForecast || "").toLowerCase();
+        let icon = "fas fa-cloud";
+        for (const [k, v] of Object.entries(weatherIcons)) {
+          if (cond.includes(k)) {
+            icon = v;
             break;
           }
         }
-
-        // Extract wind speed and direction
-        const windInfo = weatherData.windSpeed || "N/A";
-        const humidity = "N/A"; // Weather.gov doesn't provide humidity in this endpoint
-
-        weatherWidget.innerHTML = `
-                <div class="weather-header">
-                    <div class="weather-title">Current Weather</div>
-                    <button class="weather-refresh" onclick="fetchDetroitWeather()">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div class="weather-location">Detroit, MI</div>
-                <div class="weather-main">
-                    <div class="weather-icon">
-                        <i class="${iconClass}"></i>
-                    </div>
-                    <div class="weather-temp">${weatherData.temperature}°${
-          weatherData.temperatureUnit
-        }</div>
-                </div>
-                <div class="weather-condition">${
-                  weatherData.shortForecast
-                }</div>
-                <div class="weather-details">
-                    <div class="weather-detail">
-                        <i class="fas fa-wind"></i>
-                        <span>Wind</span>
-                        <strong>${windInfo}</strong>
-                    </div>
-                    <div class="weather-detail">
-                        <i class="fas fa-compass"></i>
-                        <span>Direction</span>
-                        <strong>${weatherData.windDirection || "N/A"}</strong>
-                    </div>
-                    <div class="weather-detail">
-                        <i class="fas fa-tint"></i>
-                        <span>Humidity</span>
-                        <strong>${humidity}</strong>
-                    </div>
-                    <div class="weather-detail">
-                        <i class="fas fa-eye"></i>
-                        <span>Forecast</span>
-                        <strong>${
-                          weatherData.isDaytime ? "Day" : "Night"
-                        }</strong>
-                    </div>
-                </div>
-            `;
+        const top = weatherWidget.querySelector(".weather-top");
+        // remove anything after the top row
+        while (top.nextSibling) top.nextSibling.remove();
+        top.insertAdjacentHTML(
+          "afterend",
+          `
+        <div class="weather-main">
+          <div class="weather-icon"><i class="${icon}"></i></div>
+          <div class="weather-readings">
+            <div class="weather-temp">${w.temperature}<sup>°${
+            w.temperatureUnit
+          }</sup></div>
+            <div class="weather-condition">${w.shortForecast}</div>
+          </div>
+        </div>
+        <div class="weather-meta">
+          <span>Wind<strong>${w.windSpeed || "—"}</strong></span>
+          <span>Dir<strong>${w.windDirection || "—"}</strong></span>
+          <span>${w.isDaytime ? "Day" : "Night"}<strong>${
+            w.isDaytime ? "☀" : "☾"
+          }</strong></span>
+        </div>
+      `
+        );
       }
 
-      // Initialize the dashboard when the page loads
-      document.addEventListener("DOMContentLoaded", initDashboard);
+      function renderError(msg) {
+        const top = weatherWidget.querySelector(".weather-top");
+        while (top.nextSibling) top.nextSibling.remove();
+        top.insertAdjacentHTML(
+          "afterend",
+          `
+        <div class="error-state">
+          <div>${msg}</div>
+          <button class="retry-btn" onclick="fetchDetroitWeather()">
+            <i class="fas fa-rotate-right"></i> Try again
+          </button>
+        </div>
+      `
+        );
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchDetroitWeather);
     </script>
   </body>
 </html>
