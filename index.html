@@ -817,83 +817,95 @@
       top.insertAdjacentHTML('afterend', `<div class="error-state"><div>${msg}</div><button class="retry-btn" onclick="fetchDetroitWeather()"><i class="fas fa-rotate-right"></i> Try again</button></div>`);
     }
 
-    // ----- TRENDING CONTENT (simulated multi-platform) -----
+    // ----- TRENDING CONTENT (real titles, June 2026) -----
+    // `wiki` is the exact Wikipedia article title used to fetch a real poster
+    // thumbnail at runtime. `bg`/`posterIcon` are the fallback shown until (or
+    // unless) the poster loads.
     const trendingData = [
-      { 
-        title: "The Last Signal", 
-        type: "movie", 
-        platforms: ["Netflix", "Prime Video"], 
-        genre: "Sci‑fi thriller",
-        posterIcon: "fa-solid fa-satellite", 
-        bg: "linear-gradient(135deg, #1e1b4b, #312e81)"
+      {
+        title: "Avatar: Fire and Ash",
+        type: "movie",
+        platforms: ["Disney+"],
+        genre: "Sci‑fi epic",
+        wiki: "Avatar: Fire and Ash",
+        posterIcon: "fa-solid fa-fire",
+        bg: "linear-gradient(135deg, #0f172a, #1e3a8a)"
       },
-      { 
-        title: "Midnight Dynasty", 
-        type: "tv", 
-        platforms: ["HBO Max", "Hulu"], 
-        genre: "Drama",
-        posterIcon: "fa-solid fa-crown", 
-        bg: "linear-gradient(135deg, #4c1d95, #7e22ce)"
-      },
-      { 
-        title: "Glitch Kitchen", 
-        type: "tv", 
-        platforms: ["YouTube", "Pluto TV"], 
-        genre: "Cooking competition",
-        posterIcon: "fa-solid fa-fire-burner", 
-        bg: "linear-gradient(135deg, #b45309, #d97706)"
-      },
-      { 
-        title: "Echo Valley", 
-        type: "movie", 
-        platforms: ["Apple TV+", "Disney+"], 
-        genre: "Fantasy adventure",
-        posterIcon: "fa-solid fa-mountain-sun", 
+      {
+        title: "Hoppers",
+        type: "movie",
+        platforms: ["Disney+"],
+        genre: "Animated comedy",
+        wiki: "Hoppers (film)",
+        posterIcon: "fa-solid fa-otter",
         bg: "linear-gradient(135deg, #065f46, #059669)"
       },
-      { 
-        title: "Neon Drift", 
-        type: "movie", 
-        platforms: ["Tubi", "Plex"], 
-        genre: "Action",
-        posterIcon: "fa-solid fa-car-side", 
+      {
+        title: "Office Romance",
+        type: "movie",
+        platforms: ["Netflix"],
+        genre: "Romantic comedy",
+        wiki: "Office Romance (2026 film)",
+        posterIcon: "fa-solid fa-heart",
         bg: "linear-gradient(135deg, #9d174d, #db2777)"
       },
-      { 
-        title: "Spirit Chronicles", 
-        type: "tv", 
-        platforms: ["Crunchyroll", "Netflix"], 
-        genre: "Anime",
-        posterIcon: "fa-solid fa-feather", 
-        bg: "linear-gradient(135deg, #0f172a, #1e3a8a)"
+      {
+        title: "Wallace & Gromit: Vengeance Most Fowl",
+        type: "movie",
+        platforms: ["Netflix"],
+        genre: "Animated adventure",
+        wiki: "Wallace & Gromit: Vengeance Most Fowl",
+        posterIcon: "fa-solid fa-cheese",
+        bg: "linear-gradient(135deg, #b45309, #d97706)"
+      },
+      {
+        title: "House of the Dragon",
+        type: "tv",
+        platforms: ["HBO Max"],
+        genre: "Fantasy drama",
+        wiki: "House of the Dragon",
+        posterIcon: "fa-solid fa-dragon",
+        bg: "linear-gradient(135deg, #4c1d95, #7e22ce)"
+      },
+      {
+        title: "Voicemails for Isabelle",
+        type: "movie",
+        platforms: ["Netflix"],
+        genre: "Comedy drama",
+        wiki: "Voicemails for Isabelle",
+        posterIcon: "fa-solid fa-voicemail",
+        bg: "linear-gradient(135deg, #1e1b4b, #312e81)"
       }
     ];
+
+    function platformIcon(p) {
+      if (p.includes('Netflix')) return 'fa-solid fa-n';
+      if (p.includes('YouTube')) return 'fab fa-youtube';
+      if (p.includes('Prime')) return 'fab fa-amazon';
+      if (p.includes('Hulu')) return 'fa-solid fa-h';
+      if (p.includes('Disney')) return 'fa-solid fa-castle';
+      if (p.includes('HBO')) return 'fa-solid fa-maximize';
+      if (p.includes('Apple')) return 'fab fa-apple';
+      if (p.includes('Crunchyroll')) return 'fa-solid fa-dragon';
+      if (p.includes('Pluto')) return 'fa-solid fa-satellite-dish';
+      if (p.includes('Plex')) return 'fa-solid fa-server';
+      if (p.includes('Tubi')) return 'fa-solid fa-film';
+      return 'fa-solid fa-tv';
+    }
 
     function renderTrending() {
       const container = document.getElementById('trending-container');
       if (!container) return;
-      
+
       let html = '<div class="trending-grid">';
-      trendingData.forEach(item => {
-        const platformTags = item.platforms.map(p => {
-          let iconClass = 'fa-solid fa-tv';
-          if (p.includes('Netflix')) iconClass = 'fa-solid fa-n';
-          else if (p.includes('YouTube')) iconClass = 'fab fa-youtube';
-          else if (p.includes('Prime')) iconClass = 'fab fa-amazon';
-          else if (p.includes('Hulu')) iconClass = 'fa-solid fa-h';
-          else if (p.includes('Disney')) iconClass = 'fa-solid fa-castle';
-          else if (p.includes('HBO')) iconClass = 'fa-solid fa-maximize';
-          else if (p.includes('Apple')) iconClass = 'fab fa-apple';
-          else if (p.includes('Crunchyroll')) iconClass = 'fa-solid fa-dragon';
-          else if (p.includes('Pluto')) iconClass = 'fa-solid fa-satellite-dish';
-          else if (p.includes('Plex')) iconClass = 'fa-solid fa-server';
-          else if (p.includes('Tubi')) iconClass = 'fa-solid fa-film';
-          return `<span class="platform-tag"><i class="${iconClass}"></i> ${p}</span>`;
-        }).join('');
+      trendingData.forEach((item, i) => {
+        const platformTags = item.platforms
+          .map(p => `<span class="platform-tag"><i class="${platformIcon(p)}"></i> ${p}</span>`)
+          .join('');
 
         html += `
           <div class="trending-card">
-            <div class="trending-poster" style="background: ${item.bg};">
+            <div class="trending-poster" id="poster-${i}" style="background: ${item.bg};">
               <i class="${item.posterIcon}" style="font-size: 2.2rem; opacity: 0.9;"></i>
             </div>
             <div class="trending-info">
@@ -909,6 +921,53 @@
       });
       html += '</div>';
       container.innerHTML = html;
+
+      // Progressively swap in real poster art. Each title is fetched
+      // independently so one failure never blocks the others; on any failure
+      // the gradient + icon placeholder simply stays.
+      hydrateTrendingPosters();
+    }
+
+    async function hydrateTrendingPosters() {
+      const WIKI_API = 'https://en.wikipedia.org/w/api.php';
+      await Promise.all(trendingData.map(async (item, i) => {
+        if (!item.wiki) return;
+        const params = new URLSearchParams({
+          action: 'query', format: 'json', prop: 'pageimages',
+          piprop: 'thumbnail', pithumbsize: '600', redirects: '1',
+          titles: item.wiki, origin: '*'
+        });
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 8000);
+          const res = await fetch(`${WIKI_API}?${params}`, { signal: ctrl.signal })
+            .finally(() => clearTimeout(t));
+          if (!res.ok) return;
+          const data = await res.json();
+          const pages = data && data.query && data.query.pages;
+          if (!pages) return;
+          const page = Object.values(pages)[0];
+          const src = page && page.thumbnail && page.thumbnail.source;
+          if (!src) return;
+
+          // Preload, then swap so we never flash a broken image.
+          await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = src;
+          });
+          const posterEl = document.getElementById(`poster-${i}`);
+          if (posterEl) {
+            posterEl.style.backgroundImage = `url("${src}")`;
+            posterEl.style.backgroundColor = '#000';
+            const icon = posterEl.querySelector('i');
+            if (icon) icon.style.display = 'none';
+          }
+        } catch (e) {
+          /* keep the gradient fallback */
+        }
+      }));
     }
 
     // Initialize directly. This script sits at the bottom of <body>, so every
