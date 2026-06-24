@@ -902,11 +902,18 @@
       container.innerHTML = html;
     }
 
-    // Initialize weather & trending on load
-    document.addEventListener('DOMContentLoaded', () => {
+    // Initialize weather & trending — handle the case where the DOM is
+    // already parsed (DOMContentLoaded may have fired before this runs).
+    function init() {
       fetchDetroitWeather();
       renderTrending();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
 
   })();
 </script>
