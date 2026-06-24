@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>StreamHub · Your streaming dashboard</title>
+  <title>Stream Dash · Your streaming dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -662,7 +662,7 @@
     <div class="logo">
       <div class="logo-mark"><i class="fas fa-play"></i></div>
       <div class="logo-text">
-        <h1>Stream<em>Hub</em></h1>
+        <h1>Stream<em>Dash</em></h1>
         <p>Everything in one place</p>
       </div>
     </div>
@@ -705,7 +705,7 @@
   </section>
 
   <footer>
-    <div>© <span id="year"></span> StreamHub. Your central hub for all streaming.</div>
+    <div>© <span id="year"></span> Stream Dash. Your central hub for all streaming.</div>
     <div>by <em>Gridlantis.org</em></div>
   </footer>
 </div>
@@ -758,23 +758,32 @@
 
     window.fetchDetroitWeather = async function() {
       const topRow = weatherWidget.querySelector('.weather-top');
-      let next = topRow.nextSibling;
-      while (next) {
-        if (next.nodeType === 1 && !next.classList.contains('weather-top')) next.remove();
-        next = topRow.nextSibling;
-      }
+      // Clear everything after the top row (elements AND whitespace text nodes).
+      // The old version only removed element nodes, which left a text node as
+      // nextSibling forever and spun in an infinite loop.
+      while (topRow.nextSibling) topRow.nextSibling.remove();
       topRow.insertAdjacentHTML('afterend', `<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div><span>Fetching weather…</span></div>`);
+
+      // Abort the request if it takes too long (e.g. a sandbox that silently
+      // blocks the connection) so the widget shows an error instead of hanging.
+      const withTimeout = (url, ms = 8000) => {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), ms);
+        return fetch(url, { signal: ctrl.signal, headers: { 'Accept': 'application/geo+json' } })
+          .finally(() => clearTimeout(t));
+      };
+
       try {
-        const pointsRes = await fetch(`${WEATHER_GOV_BASE}/points/${DETROIT.lat.toFixed(4)},${DETROIT.lon.toFixed(4)}`);
+        const pointsRes = await withTimeout(`${WEATHER_GOV_BASE}/points/${DETROIT.lat.toFixed(4)},${DETROIT.lon.toFixed(4)}`);
         if (!pointsRes.ok) throw new Error('points');
         const points = await pointsRes.json();
-        const forecastRes = await fetch(points.properties.forecast);
+        const forecastRes = await withTimeout(points.properties.forecast);
         if (!forecastRes.ok) throw new Error('forecast');
         const forecast = await forecastRes.json();
         renderWeather(forecast.properties.periods[0]);
       } catch (e) {
         console.error(e);
-        renderWeatherError('Weather service unavailable');
+        renderWeatherError('Weather unavailable here — try opening this file directly in your browser.');
       }
     };
 
@@ -902,18 +911,12 @@
       container.innerHTML = html;
     }
 
-    // Initialize weather & trending — handle the case where the DOM is
-    // already parsed (DOMContentLoaded may have fired before this runs).
-    function init() {
-      fetchDetroitWeather();
-      renderTrending();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    // Initialize directly. This script sits at the bottom of <body>, so every
+    // element it touches already exists — no need to wait on DOMContentLoaded
+    // (which may have already fired before this code runs). The services grid
+    // above renders the same way, which is why it always worked.
+    renderTrending();
+    fetchDetroitWeather();
 
   })();
 </script>
